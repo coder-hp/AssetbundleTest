@@ -12,24 +12,35 @@ public class MainScript : MonoBehaviour
     {
     }
 
+    public void onClickDownLoadMainAB()
+    {
+        // 先下载主包
+        AssetBundleMnager.s_instance.downLoadMainABFile();
+    }
+
     public void onClickLoadMainAB()
     {
         AssetBundleMnager.s_instance.loadMainAB();
     }
 
+    public void onClickDownLoadAB()
+    {
+        // 下载其他AB包
+        AssetBundleMnager.s_instance.downLoadABFile();
+    }
+
     public void onClickLoadAB()
     {
-        ab_images = AssetBundleMnager.s_instance.loadAB("images");
+        AssetBundleMnager.s_instance.loadAB("images.ab");
     }
 
     public void onClickGetAB()
     {
-        //image1.sprite = ab_images.LoadAsset<Sprite>("1");
-        image1.sprite = AssetBundleMnager.s_instance.getAssetBundle("images").LoadAsset<Sprite>("1");
+        image1.sprite = AssetBundleMnager.s_instance.getAssetBundle("images.ab").LoadAsset<Sprite>("1");
     }
 
     public void onClickUnLoadAB()
     {
-        AssetBundleMnager.s_instance.unLoadAB("images");
+        AssetBundleMnager.s_instance.unLoadAB("images.ab");
     }
 }

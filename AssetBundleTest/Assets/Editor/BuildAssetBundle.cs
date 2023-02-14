@@ -13,37 +13,37 @@ public class BuildAssetBundle : MonoBehaviour
         iOS,
     }
 
-    [MenuItem("HP Utils/AssetBundle/Build/PC")]
+    [MenuItem("HP-Tool/AssetBundle/Build/PC")]
     static void BuildPC()
     {
         BuildAssetBundles(AssetBundlePlatform.PC);
     }
 
-    [MenuItem("HP Utils/AssetBundle/Build/Android")]
+    [MenuItem("HP-Tool/AssetBundle/Build/Android")]
     static void BuildAndroid()
     {
         BuildAssetBundles(AssetBundlePlatform.Android);
     }
 
-    [MenuItem("HP Utils/AssetBundle/Build/iOS")]
+    [MenuItem("HP-Tool/AssetBundle/Build/iOS")]
     static void BuildIos()
     {
         BuildAssetBundles(AssetBundlePlatform.iOS);
     }
 
-    [MenuItem("HP Utils/AssetBundle/Clear/PC")]
+    [MenuItem("HP-Tool/AssetBundle/Clear/PC")]
     static void ClearAssetBundlePC()
     {
         ClearBuildAssetBundles(AssetBundlePlatform.PC);
     }
 
-    [MenuItem("HP Utils/AssetBundle/Clear/Android")]
+    [MenuItem("HP-Tool/AssetBundle/Clear/Android")]
     static void ClearAssetBundleAndroid()
     {
         ClearBuildAssetBundles(AssetBundlePlatform.Android);
     }
 
-    [MenuItem("HP Utils/AssetBundle/Clear/iOS")]
+    [MenuItem("HP-Tool/AssetBundle/Clear/iOS")]
     static void ClearAssetBundleIos()
     {
         ClearBuildAssetBundles(AssetBundlePlatform.iOS);
@@ -55,7 +55,14 @@ public class BuildAssetBundle : MonoBehaviour
     {
         // ab资源存储目录
         string path = Application.dataPath.Replace("/Assets", "/AssetBundles/" + assetBundlePlatform.ToString());
-        if(!Directory.Exists(path))
+
+        // 如果本地存在文件，先清空掉
+        if (Directory.Exists(path))
+        {
+            ClearBuildAssetBundles(assetBundlePlatform);
+        }
+
+        if (!Directory.Exists(path))
         {
             // 如果文件夹不存在，则新建一个
             Directory.CreateDirectory(path);
@@ -91,8 +98,6 @@ public class BuildAssetBundle : MonoBehaviour
         string path = Application.dataPath.Replace("/Assets", "/AssetBundles/" + assetBundlePlatform.ToString());
         DirectoryInfo di = new DirectoryInfo(path);
         di.Delete(true);
-
-        //Directory.Delete(path);
         Debug.Log("AssetBundle ClearBuildAssetBundles " + assetBundlePlatform + " 完毕:" + path);
     }
 }

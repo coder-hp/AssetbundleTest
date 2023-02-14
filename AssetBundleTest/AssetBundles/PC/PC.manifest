@@ -1,7 +1,7 @@
 ManifestFileVersion: 0
-CRC: 700554170
+CRC: 4112931457
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
-      Name: images
+      Name: images.ab
       Dependencies: {}
