@@ -17,7 +17,7 @@ public class AssetBundleMnager : MonoBehaviour
     public static AssetBundleMnager s_instance = null;
 
     // 需要自己配置的参数
-    AssetBundlePlatform assetBundlePlatform = AssetBundlePlatform.PC;
+    public AssetBundlePlatform assetBundlePlatform = AssetBundlePlatform.PC;
     string url = "http://qiniu-hp-us.hanxinyi.cn/AssetBundleTest/";         // 服务器ab包地址
     string localSaveABPath = "";                                            // 本地存储ab包路径
 
@@ -30,7 +30,7 @@ public class AssetBundleMnager : MonoBehaviour
     void Awake()
     {
         s_instance = this;
-
+        
         url += (assetBundlePlatform.ToString() + "/");
         abCache = new Dictionary<string, AssetBundle>();
         localSaveABPath = Application.persistentDataPath + "/AssetBundles/" + (assetBundlePlatform.ToString() + "/");
@@ -40,6 +40,7 @@ public class AssetBundleMnager : MonoBehaviour
 
     public void downLoadMainABFile()
     {
+        Debug.Log("开始下载主包:" + assetBundlePlatform.ToString());
         StartCoroutine(downLoadFile(url + assetBundlePlatform.ToString(), assetBundlePlatform.ToString(), localSaveABPath, (result)=>
         {
             Debug.Log("AssetBundleMnager.downLoadMainABFile 主包" + assetBundlePlatform.ToString() + "  下载" + (result ? "成功":"失败"));
@@ -59,11 +60,10 @@ public class AssetBundleMnager : MonoBehaviour
             Debug.Log("AssetBundleMnager.downLoadABFile 已经全部下载完毕，不需要再次下载");
             return;
         }
-
+        
+        Debug.Log("开始下载AB包:" + waitDownLoadABList[0]);
         StartCoroutine(downLoadFile(url + waitDownLoadABList[0], waitDownLoadABList[0], localSaveABPath, (result) =>
         {
-            Debug.Log("AssetBundleMnager.downLoadABFile下载" + waitDownLoadABList[0] + "  " + (result ? "成功" : "失败"));
-
             if (waitDownLoadABList.Count > 0)
             {
                 waitDownLoadABList.RemoveAt(0);
@@ -178,57 +178,79 @@ public class AssetBundleMnager : MonoBehaviour
     // 加载main ab包
     public void loadMainAB()
     {
-        if (mainAB == null)
+        try
         {
-            mainAB = AssetBundle.LoadFromFile(localSaveABPath + assetBundlePlatform.ToString());
-            mainManifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-            string[] str = mainManifest.GetAllAssetBundles();
-            for (int i = 0; i < str.Length; i++)
+            if (mainAB == null)
             {
-                abNameList.Add(str[i]);
-                waitDownLoadABList.Add(str[i]);
-                Debug.Log("AssetBundleMnager.loadMainAB 包含ab资源:" + str[i]);
+                mainAB = AssetBundle.LoadFromFile(localSaveABPath + assetBundlePlatform.ToString());
+                mainManifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+                string[] str = mainManifest.GetAllAssetBundles();
+                for (int i = 0; i < str.Length; i++)
+                {
+                    abNameList.Add(str[i]);
+                    waitDownLoadABList.Add(str[i]);
+                    Debug.Log("AssetBundleMnager.loadMainAB 包含ab资源:" + str[i]);
+                }
+            }
+            else
+            {
+                Debug.Log("AssetBundleMnager.loadMainAB已加载，不可重复加载");
             }
         }
-        else
+        catch(Exception ex)
         {
-            Debug.Log("AssetBundleMnager.loadMainAB已加载，不可重复加载");
+            Debug.Log(ex.ToString());
         }
     }
 
     public AssetBundle loadAB(string name)
     {
-        if(abCache.ContainsKey(name))
+        try
         {
-            Debug.Log("AssetBundleMnager.loadAB 已加载，使用缓存:" + name);
-            return abCache[name];
+            if (abCache.ContainsKey(name))
+            {
+                Debug.Log("AssetBundleMnager.loadAB 已加载，使用缓存:" + name);
+                return abCache[name];
+            }
+            string abPath = localSaveABPath + name;
+            if (!File.Exists(abPath))
+            {
+                Debug.LogError("AssetBundleMnager.loadAB 文件不存在:" + abPath);
+                return null;
+            }
+            AssetBundle ab = AssetBundle.LoadFromFile(abPath);
+            abCache[name] = ab;
+
+            Debug.Log("AssetBundleMnager.loadAB 加载完毕:" + name);
+            return ab;
         }
-        string abPath = localSaveABPath + name;
-        if(!File.Exists(abPath))
+        catch (Exception ex)
         {
-            Debug.LogError("AssetBundleMnager.loadAB 文件不存在:" + abPath);
+            Debug.Log(ex.ToString());
             return null;
         }
-        AssetBundle ab = AssetBundle.LoadFromFile(abPath);
-        abCache[name] = ab;
-
-        Debug.Log("AssetBundleMnager.loadAB 加载完毕:" + name);
-
-        return ab;
     }
 
     public void unLoadAB(string name)
     {
-        if (!abCache.ContainsKey(name))
+        try
         {
-            Debug.LogError("AssetBundleMnager.unLoadAB 没有该资源缓存:" + name);
-            return;
+            if (!abCache.ContainsKey(name))
+            {
+                Debug.LogError("AssetBundleMnager.unLoadAB 没有该资源缓存:" + name);
+                return;
+            }
+
+            // 默认释放已导入的对象
+            // 比如一个Image组件使用了ab包里的Sprite，释放后Image显示空
+            abCache[name].Unload(true);
+            abCache.Remove(name);
+            Debug.Log("AssetBundleMnager.unLoadAB 卸载资源:" + name);
         }
-        // 默认释放已导入的对象
-        // 比如一个Image组件使用了ab包里的Sprite，释放后Image显示空
-        abCache[name].Unload(true);
-        abCache.Remove(name);
-        Debug.Log("AssetBundleMnager.unLoadAB 卸载资源:" + name);
+        catch (Exception ex)
+        {
+            Debug.Log(ex.ToString());
+        }
     }
 
     public AssetBundle getAssetBundle(string name)

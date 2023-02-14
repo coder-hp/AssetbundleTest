@@ -5,13 +5,21 @@ using UnityEngine.UI;
 
 public class MainScript : MonoBehaviour
 {
+    public static MainScript s_instance = null;
+
     public Image image1;
+    public Text text1;
     AssetBundle ab_images;
+
+    private void Awake()
+    {
+        s_instance = this;
+    }
 
     void Start()
     {
     }
-
+    
     public void onClickDownLoadMainAB()
     {
         // 先下载主包
