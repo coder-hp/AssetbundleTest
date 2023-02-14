@@ -1,26 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MainScript : MonoBehaviour
 {
+    public Image image1;
+    AssetBundle ab_images;
+
     void Start()
     {
-        //StartCoroutine(LoadFromFileASync("D:\\develop\\gitee\\assetbundletest\\AssetBundleTest\\AssetBundles\\PC"));
     }
 
-    IEnumerator LoadFromFileASync(string path)
+    public void onClickLoadMainAB()
     {
-        AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(path);
-        yield return createRequest;
-        AssetBundle bundle = createRequest.assetBundle;
-        if (bundle == null)
-        {
-            Debug.Log("Failed to load AssetBundle!");
-            yield break;
-        }
-        var parefab = bundle.LoadAsset<GameObject>("bullet");
-        Instantiate(parefab);
+        AssetBundleMnager.s_instance.loadMainAB();
     }
 
+    public void onClickLoadAB()
+    {
+        ab_images = AssetBundleMnager.s_instance.loadAB("images");
+    }
+
+    public void onClickGetAB()
+    {
+        //image1.sprite = ab_images.LoadAsset<Sprite>("1");
+        image1.sprite = AssetBundleMnager.s_instance.getAssetBundle("images").LoadAsset<Sprite>("1");
+    }
+
+    public void onClickUnLoadAB()
+    {
+        AssetBundleMnager.s_instance.unLoadAB("images");
+    }
 }
